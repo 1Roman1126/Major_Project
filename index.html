@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Stock Dashboard</h1>
+        <nav>
+            <input type="file" id="fileInput" />
+            <select id="companySelect">
+                <!-- Options will be populated dynamically -->
+            </select>
+        </nav>
+    </header>
+
+    <main>
+        <div class="chart-container">
+            <h2>Stock Prices</h2>
+            <canvas id="stockPriceChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h2>Trading Volume</h2>
+            <canvas id="tradingVolumeChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h2>Market Capitalization</h2>
+            <canvas id="marketCapChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h2>High vs Low Prices</h2>
+            <canvas id="highLowPricesChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h2>Price and Value Metrics</h2>
+            <canvas id="priceValueChart"></canvas>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
