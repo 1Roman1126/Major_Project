@@ -2,7 +2,7 @@ document.getElementById('fileInput').addEventListener('change', handleFileSelect
 document.getElementById('companySelect').addEventListener('change', updateCharts);
 
 let csvData = [];
-let companies = [];
+let charts = []; // Track chart instances
 
 // Function to handle file upload and parse CSV
 function handleFileSelect(event) {
@@ -14,6 +14,7 @@ function handleFileSelect(event) {
         skipEmptyLines: true,
         complete: function(results) {
             csvData = results.data;
+            resetCharts(); // Reset charts for new file
             populateCompanySelect();
         }
     });
@@ -47,21 +48,29 @@ function updateCharts() {
 
     const dates = companyData.map(row => row.BUSINESS_DATE);
     const openPrices = companyData.map(row => parseFloat(row.OPEN_PRICE));
-    const highPrices = companyData.map(row => parseFloat(row.HIGH_PRICE));
-    const lowPrices = companyData.map(row => parseFloat(row.LOW_PRICE));
     const closePrices = companyData.map(row => parseFloat(row.CLOSE_PRICE));
     const tradedQuantities = companyData.map(row => parseFloat(row.TOTAL_TRADED_QUANTITY));
     const marketCaps = companyData.map(row => parseFloat(row.MARKET_CAPITALIZATION));
-    const fiftyTwoWeeksHigh = companyData.map(row => parseFloat(row.FIFTY_TWO_WEEKS_HIGH));
-    const fiftyTwoWeeksLow = companyData.map(row => parseFloat(row.FIFTY_TWO_WEEKS_LOW));
+    const highPrices = companyData.map(row => parseFloat(row.HIGH_PRICE));
+    const lowPrices = companyData.map(row => parseFloat(row.LOW_PRICE));
     const averageTradedPrice = companyData.map(row => parseFloat(row.AVERAGE_TRADED_PRICE));
     const previousDayClosePrice = companyData.map(row => parseFloat(row.PREVIOUS_DAY_CLOSE_PRICE));
-    const totalTrades = companyData.map(row => parseFloat(row.TOTAL_TRADES));
-    const lastUpdatedPrice = companyData.map(row => parseFloat(row.LAST_UPDATED_PRICE));
 
-    // Stock Prices Chart
-    const ctxStockPrice = document.getElementById('stockPriceChart').getContext('2d');
-    new Chart(ctxStockPrice, {
+    // Reset existing charts before drawing new ones
+    resetCharts();
+
+    // Draw new charts
+    drawStockPriceChart(dates, openPrices, closePrices);
+    drawTradingVolumeChart(dates, tradedQuantities);
+    drawMarketCapChart(dates, marketCaps);
+    drawHighLowPricesChart(dates, highPrices, lowPrices);
+    drawPriceValueChart(dates, averageTradedPrice, previousDayClosePrice);
+}
+
+// Helper function to draw the Stock Prices Chart
+function drawStockPriceChart(dates, openPrices, closePrices) {
+    const ctx = document.getElementById('stockPriceChart').getContext('2d');
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: dates,
@@ -84,9 +93,20 @@ function updateCharts() {
         },
         options: {
             responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             plugins: {
                 legend: {
                     position: 'top',
+                    onClick: function(e, legendItem) {
+                        const index = legendItem.datasetIndex;
+                        const ci = this.chart;
+                        const meta = ci.getDatasetMeta(index);
+                        meta.hidden = !meta.hidden; // Toggle dataset visibility
+                        ci.update();
+                    }
                 },
                 tooltip: {
                     callbacks: {
@@ -102,26 +122,33 @@ function updateCharts() {
             }
         }
     });
+    charts.push(chart);
+}
 
-    // Trading Volume Chart
-    const ctxTradingVolume = document.getElementById('tradingVolumeChart').getContext('2d');
-    new Chart(ctxTradingVolume, {
+// Function to draw the Trading Volume Chart
+function drawTradingVolumeChart(dates, tradedQuantities) {
+    const ctx = document.getElementById('tradingVolumeChart').getContext('2d');
+    const chart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: dates,
             datasets: [{
                 label: 'Total Traded Quantity',
                 data: tradedQuantities,
-                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                backgroundColor: 'rgba(153, 102, 255, 0.5)',
                 borderColor: 'rgba(153, 102, 255, 1)',
                 borderWidth: 1
             }]
         },
         options: {
             responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             plugins: {
                 legend: {
-                    position: 'top',
+                    position: 'top'
                 },
                 tooltip: {
                     callbacks: {
@@ -137,10 +164,13 @@ function updateCharts() {
             }
         }
     });
+    charts.push(chart);
+}
 
-    // Market Capitalization Chart
-    const ctxMarketCap = document.getElementById('marketCapChart').getContext('2d');
-    new Chart(ctxMarketCap, {
+// Function to draw the Market Capitalization Chart
+function drawMarketCapChart(dates, marketCaps) {
+    const ctx = document.getElementById('marketCapChart').getContext('2d');
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: dates,
@@ -154,9 +184,13 @@ function updateCharts() {
         },
         options: {
             responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             plugins: {
                 legend: {
-                    position: 'top',
+                    position: 'top'
                 },
                 tooltip: {
                     callbacks: {
@@ -172,10 +206,13 @@ function updateCharts() {
             }
         }
     });
+    charts.push(chart);
+}
 
-    // High vs Low Prices Chart
-    const ctxHighLowPrices = document.getElementById('highLowPricesChart').getContext('2d');
-    new Chart(ctxHighLowPrices, {
+// Function to draw the High vs Low Prices Chart
+function drawHighLowPricesChart(dates, highPrices, lowPrices) {
+    const ctx = document.getElementById('highLowPricesChart').getContext('2d');
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: dates,
@@ -198,9 +235,13 @@ function updateCharts() {
         },
         options: {
             responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             plugins: {
                 legend: {
-                    position: 'top',
+                    position: 'top'
                 },
                 tooltip: {
                     callbacks: {
@@ -216,10 +257,13 @@ function updateCharts() {
             }
         }
     });
+    charts.push(chart);
+}
 
-    // Price and Value Metrics Chart
-    const ctxPriceValue = document.getElementById('priceValueChart').getContext('2d');
-    new Chart(ctxPriceValue, {
+// Function to draw the Price and Value Metrics Chart
+function drawPriceValueChart(dates, averageTradedPrice, previousDayClosePrice) {
+    const ctx = document.getElementById('priceValueChart').getContext('2d');
+    const chart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: dates,
@@ -242,9 +286,13 @@ function updateCharts() {
         },
         options: {
             responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             plugins: {
                 legend: {
-                    position: 'top',
+                    position: 'top'
                 },
                 tooltip: {
                     callbacks: {
@@ -260,4 +308,11 @@ function updateCharts() {
             }
         }
     });
+    charts.push(chart);
+}
+
+// Function to reset and destroy existing charts
+function resetCharts() {
+    charts.forEach(chart => chart.destroy());
+    charts = [];
 }
