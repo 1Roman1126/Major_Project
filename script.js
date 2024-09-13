@@ -1,154 +1,95 @@
-// AWS SDK Configuration
-//project
-AWS.config.update({
-    region: 'us-east-1',
-    credentials: new AWS.CognitoIdentityCredentials({
-        IdentityPoolId: 'us-east-1:8059f8ce-6b06-4913-96aa-c63ce3cda46e'
-    })
-});
-
-const s3 = new AWS.S3();
-
-document.addEventListener('DOMContentLoaded', function () {
-    fetchLatestCsv().then(data => {
-        createPriceChart(data);
-        createTradeChart(data);
-        createMarketChart(data);
-    }).catch(error => {
-        console.error('Error fetching or parsing CSV:', error);
-    });
-});
-
-async function fetchLatestCsv() {
-    let date = new Date();
-    for (let i = 0; i < 7; i++) {  // Try the last 7 days
-        let dateString = date.toISOString().split('T')[0];  // Formats to "YYYY-MM-DD"
-        let key = `nepse_data_${dateString}.csv`;
-        try {
-            const data = await fetchCsv(key);
-            console.log(`Successfully fetched data for ${dateString}`);
-            return data;
-        } catch (error) {
-            console.error(`No data available for ${dateString}:`, error.message);
-            date.setDate(date.getDate() - 1);  // Go to the previous day
-        }
-    }
-    throw new Error('No available CSV files found in the past week.');
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to right, #fbc2eb, #a6c0fe);
+    color: #333;
 }
 
-function fetchCsv(key) {
-    const params = {
-        Bucket: 'minorproject-forbes',
-        Key: key
-    };
-
-    return new Promise((resolve, reject) => {
-        s3.getObject(params, function(err, data) {
-            if (err) {
-                reject(new Error(`Failed to fetch ${key} from S3: ${err.message}`));
-            } else {
-                const csvData = new TextDecoder("utf-8").decode(data.Body).replace(/^\uFEFF/, '');
-                Papa.parse(csvData, {
-                    header: true,
-                    dynamicTyping: true,
-                    skipEmptyLines: true,
-                    complete: results => resolve(results.data),
-                    error: err => reject(new Error(`Parsing error: ${err.message}`))
-                });
-            }
-        });
-    });
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-function createPriceChart(data) {
-    const ctx = document.getElementById('priceChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: data.map(item => item.SECURITY_NAME),
-            datasets: [{
-                label: 'Open Price',
-                data: data.map(item => item.OPEN_PRICE),
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            }, {
-                label: 'High Price',
-                data: data.map(item => item.HIGH_PRICE),
-                borderColor: 'rgb(255, 99, 132)',
-                tension: 0.1
-            }, {
-                label: 'Low Price',
-                data: data.map(item => item.LOW_PRICE),
-                borderColor: 'rgb(255, 205, 86)',
-                tension: 0.1
-            }, {
-                label: 'Close Price',
-                data: data.map(item => item.CLOSE_PRICE),
-                borderColor: 'rgb(201, 203, 207)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: false
-                }
-            }
-        }
-    });
+header h1 {
+    font-size: 2.5em;
+    margin: 0;
 }
 
-function createTradeChart(data) {
-    const ctx = document.getElementById('tradeChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: data.map(item => item.SECURITY_NAME),
-            datasets: [{
-                label: 'Total Traded Quantity',
-                data: data.map(item => item.TOTAL_TRADED_QUANTITY),
-                backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                borderColor: 'rgba(255, 159, 64, 1)',
-                borderWidth: 1
-            }, {
-                label: 'Total Trades',
-                data: data.map(item => item.TOTAL_TRADES),
-                backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                borderColor: 'rgba(153, 102, 255, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
+nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
 }
 
-function createMarketChart(data) {
-    const ctx = document.getElementById('marketChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: data.map(item => item.SECURITY_NAME),
-            datasets: [{
-                label: 'Market Capitalization',
-                data: data.map(item => item.MARKET_CAPITALIZATION),
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
+input[type="file"],
+select {
+    margin: 0 10px;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-//update in progress
+
+.custom-file-input {
+    background-color: #ff7f50;
+    color: #fff;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.chart-container {
+    margin: 30px auto;
+    width: 95%;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.chart-container:hover {
+    transform: translateY(-10px);
+}
+
+h2 {
+    margin: 0 0 20px;
+    font-size: 1.8em;
+    color: #555;
+}
+
+canvas {
+    width: 100% !important;
+    height: 400px !important;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+footer p {
+    margin: 0;
+    font-size: 1em;
+}
