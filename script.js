@@ -10,7 +10,7 @@ var s3 = new AWS.S3();
 function fetchS3File() {
     const params = {
         Bucket: 'nepse-stock-data', // Replace with your S3 bucket name
-        Key: 'nepse_data_2024-09-12.csv', // Replace with the CSV file path in the bucket
+        Key: 'https://nepse-stock-data.s3.amazonaws.com/nepse_data_2024-09-12.csv', // Replace with the CSV file path in the bucket
     };
 
     s3.getObject(params, function (err, data) {
