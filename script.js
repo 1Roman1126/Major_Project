@@ -1,6 +1,42 @@
 document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 document.getElementById('companySelect').addEventListener('change', updateCharts);
+AWS.config.region = 'us-east-1'; // e.g., 'us-west-2'
+AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: 'us-east-1:3c64b487-1e8d-4d08-975c-0a909bcab72f', // Replace with your Identity Pool ID
+});
 
+var s3 = new AWS.S3();
+
+function fetchS3File() {
+    const params = {
+        Bucket: 'nepse-stock-data', // Replace with your S3 bucket name
+        Key: 'nepse_data_2024-09-12.csv', // Replace with the CSV file path in the bucket
+    };
+
+    s3.getObject(params, function (err, data) {
+        if (err) {
+            console.log("Error fetching file", err);
+        } else {
+            const csvContent = data.Body.toString('utf-8');
+            parseCSV(csvContent); // Call your CSV parsing function
+        }
+    });
+}
+window.onload = function () {
+    fetchS3File();
+};
+
+function parseCSV(csvContent) {
+    Papa.parse(csvContent, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function (results) {
+            csvData = results.data;
+            resetCharts();
+            populateCompanySelect();
+        }
+    });
+}
 let csvData = [];
 let charts = []; // Track chart instances
 
