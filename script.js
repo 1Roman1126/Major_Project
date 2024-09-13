@@ -1,88 +1,154 @@
-document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-document.getElementById('companySelect').addEventListener('change', updateCharts);
-document.getElementById('loadS3Button').addEventListener('click', fetchS3File);
-
-let csvData = [];
-let charts = []; // Track chart instances
-
-// AWS S3 configuration
-AWS.config.region = 'us-east-1'; // Replace with your region
-AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-    IdentityPoolId: 'us-east-1:3c64b487-1e8d-4d08-975c-0a909bcab72f', // Replace with your Identity Pool ID
+// AWS SDK Configuration
+//project
+AWS.config.update({
+    region: 'us-east-1',
+    credentials: new AWS.CognitoIdentityCredentials({
+        IdentityPoolId: 'us-east-1:3c64b487-1e8d-4d08-975c-0a909bcab72f'
+    })
 });
 
-var s3 = new AWS.S3();
+const s3 = new AWS.S3();
 
-// Function to fetch CSV file from S3
-function fetchS3File() {
+document.addEventListener('DOMContentLoaded', function () {
+    fetchLatestCsv().then(data => {
+        createPriceChart(data);
+        createTradeChart(data);
+        createMarketChart(data);
+    }).catch(error => {
+        console.error('Error fetching or parsing CSV:', error);
+    });
+});
+
+async function fetchLatestCsv() {
+    let date = new Date();
+    for (let i = 0; i < 7; i++) {  // Try the last 7 days
+        let dateString = date.toISOString().split('T')[0];  // Formats to "YYYY-MM-DD"
+        let key = `nepse_data_${dateString}.csv`;
+        try {
+            const data = await fetchCsv(key);
+            console.log(`Successfully fetched data for ${dateString}`);
+            return data;
+        } catch (error) {
+            console.error(`No data available for ${dateString}:`, error.message);
+            date.setDate(date.getDate() - 1);  // Go to the previous day
+        }
+    }
+    throw new Error('No available CSV files found in the past week.');
+}
+
+function fetchCsv(key) {
     const params = {
-        Bucket: 'nepse-stock-data', // Replace with your S3 bucket name
-        Key: 'nepse_data_2024-09-12.csv', // Replace with the path to your CSV file in the bucket
+        Bucket: 'nepse-stock-data',
+        Key: key
     };
 
-    s3.getObject(params, function(err, data) {
-        if (err) {
-            console.log("Error fetching file", err);
-        } else {
-            const csvContent = data.Body.toString('utf-8');
-            parseCSV(csvContent); // Parse the CSV content
+    return new Promise((resolve, reject) => {
+        s3.getObject(params, function(err, data) {
+            if (err) {
+                reject(new Error(`Failed to fetch ${key} from S3: ${err.message}`));
+            } else {
+                const csvData = new TextDecoder("utf-8").decode(data.Body).replace(/^\uFEFF/, '');
+                Papa.parse(csvData, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    complete: results => resolve(results.data),
+                    error: err => reject(new Error(`Parsing error: ${err.message}`))
+                });
+            }
+        });
+    });
+}
+
+function createPriceChart(data) {
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(item => item.SECURITY_NAME),
+            datasets: [{
+                label: 'Open Price',
+                data: data.map(item => item.OPEN_PRICE),
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }, {
+                label: 'High Price',
+                data: data.map(item => item.HIGH_PRICE),
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.1
+            }, {
+                label: 'Low Price',
+                data: data.map(item => item.LOW_PRICE),
+                borderColor: 'rgb(255, 205, 86)',
+                tension: 0.1
+            }, {
+                label: 'Close Price',
+                data: data.map(item => item.CLOSE_PRICE),
+                borderColor: 'rgb(201, 203, 207)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
         }
     });
 }
 
-// Function to handle file upload and parse CSV
-function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            csvData = results.data;
-            resetCharts(); // Reset charts for new file
-            populateCompanySelect();
+function createTradeChart(data) {
+    const ctx = document.getElementById('tradeChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => item.SECURITY_NAME),
+            datasets: [{
+                label: 'Total Traded Quantity',
+                data: data.map(item => item.TOTAL_TRADED_QUANTITY),
+                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }, {
+                label: 'Total Trades',
+                data: data.map(item => item.TOTAL_TRADES),
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
         }
     });
 }
 
-// Function to parse CSV fetched from S3
-function parseCSV(csvContent) {
-    Papa.parse(csvContent, {
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            csvData = results.data;
-            resetCharts();
-            populateCompanySelect();
+function createMarketChart(data) {
+    const ctx = document.getElementById('marketChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => item.SECURITY_NAME),
+            datasets: [{
+                label: 'Market Capitalization',
+                data: data.map(item => item.MARKET_CAPITALIZATION),
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
         }
     });
 }
-
-// The rest of the code to handle charts (remains the same)
-function populateCompanySelect() {
-    const select = document.getElementById('companySelect');
-    select.innerHTML = ''; // Clear existing options
-    const symbols = [...new Set(csvData.map(row => row.SYMBOL))];
-
-    symbols.forEach(symbol => {
-        const option = document.createElement('option');
-        option.value = symbol;
-        option.text = symbol;
-        select.add(option);
-    });
-
-    if (symbols.length > 0) {
-        select.value = symbols[0];
-        updateCharts(); // Update charts with the first company
-    }
-}
-
-// The rest of your charting functions (drawStockPriceChart, drawTradingVolumeChart, etc.) stay the same
-// ...
-
-// Function to reset and destroy existing charts
-function resetCharts() {
-    charts.forEach(chart => chart.destroy());
-    charts = [];
-}
+//update in progress
