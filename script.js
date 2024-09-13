@@ -1,42 +1,8 @@
 document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 document.getElementById('companySelect').addEventListener('change', updateCharts);
-AWS.config.region = 'us-east-1'; // 
-AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-    IdentityPoolId: 'your-identity-pool-id', // Replace with your Identity Pool ID
-});
-
-var s3 = new AWS.S3();
 
 let csvData = [];
 let charts = []; // Track chart instances
-
-function fetchS3File() {
-    const params = {
-        Bucket: 'your-bucket-name', // Replace with your S3 bucket name
-        Key: 'your-csv-file-path.csv', // Replace with the CSV file path in the bucket
-    };
-
-    s3.getObject(params, function (err, data) {
-        if (err) {
-            console.log("Error fetching file", err);
-        } else {
-            const csvContent = data.Body.toString('utf-8');
-            parseCSV(csvContent); // Call your CSV parsing function
-        }
-    });
-}
-
-function parseCSV(csvContent) {
-    Papa.parse(csvContent, {
-        header: true,
-        skipEmptyLines: true,
-        complete: function (results) {
-            csvData = results.data;
-            resetCharts();
-            populateCompanySelect();
-        }
-    });
-}
 
 // Function to handle file upload and parse CSV
 function handleFileSelect(event) {
