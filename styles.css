@@ -1,3 +1,4 @@
+/* Original styles */
 body {
     font-family: 'Arial', sans-serif;
     margin: 0;
@@ -30,7 +31,8 @@ nav {
 }
 
 input[type="file"],
-select {
+select,
+button {
     margin: 0 10px;
     padding: 10px;
     font-size: 16px;
