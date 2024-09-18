@@ -16,6 +16,8 @@ async function fetchCSVFromS3() {
     try {
         const fileKey = 'nepse_data_2024-09-18.csv'; // Use the actual file key from S3
         const csvContent = await Storage.get(fileKey, { download: true });
+
+        console.log(csvContent.Body.toString('utf-8'));  // Log the content of the file
         
 // Function to handle file upload and parse CSV
 function handleFileSelect(event) {
