@@ -36,6 +36,11 @@ function handleFileSelect(event) {
     }
 }
 
+// Call fetchCSVFromS3 when the page loads
+window.onload = function() {
+    fetchCSVFromS3();  // Automatically fetch data from S3 when the page loads
+};
+
 // Function to populate the company selection dropdown
 function populateCompanySelect() {
     const select = document.getElementById('companySelect');
