@@ -1,9 +1,22 @@
+import { Storage } from 'aws-amplify';
+import Amplify from 'aws-amplify';
+import awsconfig from './aws-exports';  // AWS Amplify configuration file
+
+Amplify.configure(awsconfig);
+
+
 document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 document.getElementById('companySelect').addEventListener('change', updateCharts);
 
 let csvData = [];
 let charts = []; // Track chart instances
 
+// Fetch data from S3
+async function fetchCSVFromS3() {
+    try {
+        const fileKey = 'nepse_data_2024-09-18.csv'; // Use the actual file key from S3
+        const csvContent = await Storage.get(fileKey, { download: true });
+        
 // Function to handle file upload and parse CSV
 function handleFileSelect(event) {
     const file = event.target.files[0];
@@ -18,6 +31,9 @@ function handleFileSelect(event) {
             populateCompanySelect();
         }
     });
+}catch (error) {
+        console.error("Error fetching CSV from S3:", error);
+    }
 }
 
 // Function to populate the company selection dropdown
