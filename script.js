@@ -16,7 +16,10 @@ async function fetchCSVFromS3() {
     try {
         const fileKey = 'nepse_data_2024-09-18.csv'; // Use the actual file key from S3
         const csvContent = await Storage.get(fileKey, { download: true });
+         const csvText = await csvContent.Body.text();  // Convert it to text
         console.log(csvContent.Body.toString('utf-8'));  // Log the content of the file
+        console.log(csvText);  // Log to check the content
+        parseCSVData(csvText);  // Pass it to the parser function
         
 // Function to handle file upload and parse CSV
 function handleFileSelect(event) {
@@ -38,9 +41,7 @@ function handleFileSelect(event) {
 }
 
 // Call fetchCSVFromS3 when the page loads
-window.onload = function() {
-fetchCSVFromS3();  // Automatically fetch data from S3 when the page loads
-};
+window.onload = fetchCSVFromS3;
 
 // Function to populate the company selection dropdown
 function populateCompanySelect() {
