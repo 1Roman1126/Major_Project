@@ -245,6 +245,7 @@ function drawHighLowPricesChart(dates, highPrices, lowPrices) {
                     borderColor: 'rgba(255, 99, 132, 1)',
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
                     borderWidth: 2,
+                    fill: false,  // Set fill to false to not fill under the line
                 },
                 {
                     label: 'Low Price',
@@ -252,6 +253,7 @@ function drawHighLowPricesChart(dates, highPrices, lowPrices) {
                     borderColor: 'rgba(54, 162, 235, 1)',
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     borderWidth: 2,
+                    fill: false,  // Set fill to false to not fill under the line
                 }
             ]
         },
@@ -263,7 +265,7 @@ function drawHighLowPricesChart(dates, highPrices, lowPrices) {
             },
             plugins: {
                 legend: {
-                    position: 'top'
+                    position: 'top',
                 },
                 tooltip: {
                     callbacks: {
@@ -274,8 +276,19 @@ function drawHighLowPricesChart(dates, highPrices, lowPrices) {
                 }
             },
             scales: {
-                x: { title: { display: true, text: 'Date' } },
-                y: { title: { display: true, text: 'Price' }, beginAtZero: false }
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Price'
+                    },
+                    beginAtZero: false
+                }
             }
         }
     });
