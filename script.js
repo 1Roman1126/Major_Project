@@ -7,12 +7,12 @@ Amplify.configure(awsconfig);
 let csvData = [];
 let charts = [];  // Track chart instances
 
-// Fetch the CSV file from S3 when the page loads
+// Fetch the CSV file from the public S3 URL when the page loads
 async function fetchCSVFromS3() {
     try {
-        const fileKey = 'nepse_data_2024-09-18.csv';  // Replace with your actual S3 file key
-        const csvContent = await Storage.get(fileKey, { download: true });
-        const csvText = await csvContent.Body.text();  // Convert to text
+        const fileUrl = 'https://nepse-stock-data.s3.amazonaws.com/nepse_data_2024-09-18.csv';
+        const response = await fetch(fileUrl);
+        const csvText = await response.text();  // Convert to text
         console.log(csvText);  // Check the fetched CSV content
 
         parseCSVData(csvText);  // Parse and use CSV data
