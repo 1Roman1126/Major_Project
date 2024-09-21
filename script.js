@@ -10,7 +10,7 @@ let charts = [];  // Track chart instances
 // Fetch the CSV file from S3 when the page loads
 async function fetchCSVFromS3() {
     try {
-        const fileKey = 'your-csv-file.csv';  // Replace with your actual S3 file key
+        const fileKey = 'nepse_data_2024-09-18.csv';  // Replace with your actual S3 file key
         const csvContent = await Storage.get(fileKey, { download: true });
         const csvText = await csvContent.Body.text();  // Convert to text
         console.log(csvText);  // Check the fetched CSV content
