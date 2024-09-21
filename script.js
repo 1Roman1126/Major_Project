@@ -1,49 +1,41 @@
-import { Storage } from 'aws-amplify';
-import Amplify from 'aws-amplify';
-import awsconfig from './aws-exports';  // Your Amplify configuration
-
-Amplify.configure(awsconfig);
+// No need to import Amplify if using CDN links
 
 let csvData = [];
-let charts = [];  // Track chart instances
+let charts = [];
 
 // Fetch the CSV file from the public S3 URL when the page loads
 async function fetchCSVFromS3() {
     try {
-        const fileUrl = 'https://nepse-stock-data.s3.amazonaws.com/nepse_data_2024-09-18.csv';
+        const fileUrl = 'https://nepse-stock-data.s3.amazonaws.com/nepse_data_2024-09-18.csv';  // Replace with your actual S3 file URL
         const response = await fetch(fileUrl);
-        const csvText = await response.text();  // Convert to text
+        const csvText = await response.text();
         console.log(csvText);  // Check the fetched CSV content
 
-        parseCSVData(csvText);  // Parse and use CSV data
+        parseCSVData(csvText);
     } catch (error) {
         console.error("Error fetching CSV from S3:", error);
     }
 }
 
-// Parse the fetched CSV data using PapaParse and populate charts
 function parseCSVData(csvText) {
     Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
-        complete: function(results) {
+        complete: function (results) {
             csvData = results.data;
-            console.log(csvData);  // Log the parsed CSV data
-
-            populateCompanySelect();  // Populate dropdown with company symbols
+            console.log("Parsed Data: ", csvData);  // Check the parsed CSV data
+            populateCompanySelect();
         }
     });
 }
 
-// Populate company selection dropdown
 function populateCompanySelect() {
     const select = document.getElementById('companySelect');
-    const symbols = [...new Set(csvData.map(row => row.SYMBOL))];  // Get unique symbols
-
-    // Clear existing options
+    const symbols = [...new Set(csvData.map(row => row.SYMBOL))];
+    console.log("Symbols: ", symbols);  // Log the symbols to check if this part is working
+    
     select.innerHTML = '';
 
-    // Add new options based on fetched data
     symbols.forEach(symbol => {
         const option = document.createElement('option');
         option.value = symbol;
@@ -51,17 +43,14 @@ function populateCompanySelect() {
         select.add(option);
     });
 
-    // Automatically update charts with the first company
     if (symbols.length > 0) {
         select.value = symbols[0];
         updateCharts();
     }
 
-    // Update charts on company selection
     select.addEventListener('change', updateCharts);
 }
 
-// Update charts based on selected company
 function updateCharts() {
     const selectedSymbol = document.getElementById('companySelect').value;
     const companyData = csvData.filter(row => row.SYMBOL === selectedSymbol);
@@ -73,15 +62,11 @@ function updateCharts() {
     const closePrices = companyData.map(row => parseFloat(row.CLOSE_PRICE));
     const tradedQuantities = companyData.map(row => parseFloat(row.TOTAL_TRADED_QUANTITY));
 
-    // Reset existing charts
     resetCharts();
-
-    // Draw new charts with the fetched data
     drawStockPriceChart(dates, openPrices, closePrices);
     drawTradingVolumeChart(dates, tradedQuantities);
 }
 
-// Helper function to draw Stock Price chart
 function drawStockPriceChart(dates, openPrices, closePrices) {
     const ctx = document.getElementById('stockPriceChart').getContext('2d');
     const chart = new Chart(ctx, {
@@ -116,7 +101,6 @@ function drawStockPriceChart(dates, openPrices, closePrices) {
     charts.push(chart);
 }
 
-// Helper function to draw Trading Volume chart
 function drawTradingVolumeChart(dates, tradedQuantities) {
     const ctx = document.getElementById('tradingVolumeChart').getContext('2d');
     const chart = new Chart(ctx, {
@@ -142,11 +126,9 @@ function drawTradingVolumeChart(dates, tradedQuantities) {
     charts.push(chart);
 }
 
-// Reset and destroy existing charts
 function resetCharts() {
     charts.forEach(chart => chart.destroy());
     charts = [];
 }
 
-// Load the CSV data from S3 when the page loads
 window.onload = fetchCSVFromS3;
