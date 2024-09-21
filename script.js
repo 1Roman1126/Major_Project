@@ -1,7 +1,5 @@
-// No need to import Amplify if using CDN links
-
 let csvData = [];
-let charts = [];
+let charts = [];  // Track chart instances
 
 // Fetch the CSV file from the public S3 URL when the page loads
 async function fetchCSVFromS3() {
@@ -17,11 +15,12 @@ async function fetchCSVFromS3() {
     }
 }
 
+// Parse the fetched CSV data using PapaParse and populate charts
 function parseCSVData(csvText) {
     Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
-        complete: function (results) {
+        complete: function(results) {
             csvData = results.data;
             console.log("Parsed Data: ", csvData);  // Check the parsed CSV data
             populateCompanySelect();
@@ -29,18 +28,22 @@ function parseCSVData(csvText) {
     });
 }
 
+// Populate company selection dropdown
 function populateCompanySelect() {
     const select = document.getElementById('companySelect');
-    const symbols = [...new Set(csvData.map(row => row.SYMBOL))];
+    const symbols = [...new Set(csvData.map(row => row.SYMBOL))];  // Adjusted for SYMBOL column
+    
     console.log("Symbols: ", symbols);  // Log the symbols to check if this part is working
     
     select.innerHTML = '';
 
     symbols.forEach(symbol => {
-        const option = document.createElement('option');
-        option.value = symbol;
-        option.text = symbol;
-        select.add(option);
+        if (symbol && symbol !== 'undefined') {  // Skip undefined symbols
+            const option = document.createElement('option');
+            option.value = symbol;
+            option.text = symbol;
+            select.add(option);
+        }
     });
 
     if (symbols.length > 0) {
@@ -51,22 +54,24 @@ function populateCompanySelect() {
     select.addEventListener('change', updateCharts);
 }
 
+// Update charts based on selected company
 function updateCharts() {
     const selectedSymbol = document.getElementById('companySelect').value;
     const companyData = csvData.filter(row => row.SYMBOL === selectedSymbol);
 
     if (companyData.length === 0) return;
 
-    const dates = companyData.map(row => row.BUSINESS_DATE);
-    const openPrices = companyData.map(row => parseFloat(row.OPEN_PRICE));
-    const closePrices = companyData.map(row => parseFloat(row.CLOSE_PRICE));
-    const tradedQuantities = companyData.map(row => parseFloat(row.TOTAL_TRADED_QUANTITY));
+    const dates = companyData.map(row => row.BUSINESS_DATE);  // Adjusted for BUSINESS_DATE
+    const openPrices = companyData.map(row => parseFloat(row.OPEN_PRICE));  // Adjusted for OPEN_PRICE
+    const closePrices = companyData.map(row => parseFloat(row.CLOSE_PRICE));  // Adjusted for CLOSE_PRICE
+    const tradedQuantities = companyData.map(row => parseFloat(row.TOTAL_TRADED_QUANTITY));  // Adjusted for TOTAL_TRADED_QUANTITY
 
     resetCharts();
     drawStockPriceChart(dates, openPrices, closePrices);
     drawTradingVolumeChart(dates, tradedQuantities);
 }
 
+// Helper function to draw Stock Price chart
 function drawStockPriceChart(dates, openPrices, closePrices) {
     const ctx = document.getElementById('stockPriceChart').getContext('2d');
     const chart = new Chart(ctx, {
@@ -101,6 +106,7 @@ function drawStockPriceChart(dates, openPrices, closePrices) {
     charts.push(chart);
 }
 
+// Helper function to draw Trading Volume chart
 function drawTradingVolumeChart(dates, tradedQuantities) {
     const ctx = document.getElementById('tradingVolumeChart').getContext('2d');
     const chart = new Chart(ctx, {
@@ -126,6 +132,7 @@ function drawTradingVolumeChart(dates, tradedQuantities) {
     charts.push(chart);
 }
 
+// Reset and destroy existing charts
 function resetCharts() {
     charts.forEach(chart => chart.destroy());
     charts = [];
