@@ -27,32 +27,18 @@
             <h2>Trading Volume</h2>
             <canvas id="tradingVolumeChart"></canvas>
         </div>
-
-        <div class="chart-container">
-            <h2>Market Capitalization</h2>
-            <canvas id="marketCapChart"></canvas>
-        </div>
-
-        <div class="chart-container">
-            <h2>High vs Low Prices</h2>
-            <canvas id="highLowPricesChart"></canvas>
-        </div>
-
-        <div class="chart-container">
-            <h2>Price and Value Metrics</h2>
-            <canvas id="priceValueChart"></canvas>
-        </div>
     </main>
 
     <footer>
         <p>&copy; 2024 Stock Dashboard | Powered by <i class="fab fa-js"></i> JavaScript and <i class="fas fa-database"></i> Data</p>
     </footer>
 
-    <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <!-- Load required libraries via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/aws-amplify"></script> <!-- Amplify for S3 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script> <!-- PapaParse for CSV parsing -->
     
-    <!-- Custom JavaScript -->
+    <!-- Your script file -->
     <script src="script.js"></script>
     <script type="module" src="script.js"></script>
 </body>
