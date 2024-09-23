@@ -4,7 +4,7 @@ let charts = [];  // Track chart instances
 // Fetch the CSV file from the public S3 URL when the page loads
 async function fetchCSVFromS3() {
     try {
-        const fileUrl = 'https://nepse-stock-data.s3.amazonaws.com/nepse_data_2024-09-22.csv';  // Replace with your actual S3 file URL
+        const fileUrl = 'https://nepse-stock-data.s3.amazonaws.com/nepse_data_2024-09-22.csv';
         const response = await fetch(fileUrl);
         const csvText = await response.text();
         console.log(csvText);  // Check the fetched CSV content
